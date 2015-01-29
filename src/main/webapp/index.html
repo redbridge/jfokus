@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<!--
+  ~ This is free and unencumbered software released into the public domain.
+  ~
+  ~ Anyone is free to copy, modify, publish, use, compile, sell, or
+  ~ distribute this software, either in source code form or as a compiled
+  ~ binary, for any purpose, commercial or non-commercial, and by any
+  ~ means.
+  ~
+  ~ In jurisdictions that recognize copyright laws, the author or authors
+  ~ of this software dedicate any and all copyright interest in the
+  ~ software to the public domain. We make this dedication for the benefit
+  ~ of the public at large and to the detriment of our heirs and
+  ~ successors. We intend this dedication to be an overt act of
+  ~ relinquishment in perpetuity of all present and future rights to this
+  ~ software under copyright law.
+  ~
+  ~ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+  ~ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+  ~ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  ~ IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+  ~ OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+  ~ ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+  ~ OTHER DEALINGS IN THE SOFTWARE.
+  ~
+  ~ For more information, please refer to <http://unlicense.org/>
+  -->
+
+<html>
+  <head lang="en">
+    <title>RedBridge JFokus Guest Book</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet"
+          href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+    <link rel="stylesheet"
+          href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+    <style>
+      #nav {
+        margin-bottom: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-inverse navbar-static-top"
+         id="nav">
+      <div class="container">
+        <div class="navbar-header">
+          <a class="navbar-brand"
+             href="#">RedBridge JFokus Guest Book</a>
+        </div>
+        <p class="navbar-text navbar-right">Current users <span id="numUsers">0</span></p>
+      </div>
+    </nav>
+
+    <div class="jumbotron">
+      <div class="container">
+        <h1>RedBridge @ JFokus</h1>
+
+        <p>Demoing RedBridge's new Platform As A Service Cloud offering for you good folks at the JFokus 2015 conference. Ask us at
+           Booth 14
+           if you want to know more about us and our services!</p>
+
+        <p>
+          <a class="btn btn-primary btn-lg"
+             href="//redbridge.se"
+             target="_blank"
+             role="button">Find out more</a>
+          <a class="btn btn-default btn-lg"
+             href="//redbridge.se/jfokus"
+             target="_blank"
+             role="button">Win a prize</a>
+          <a class="btn btn-default btn-lg"
+             href="#"
+             onclick="$('#divMessage').toggle('fast')"
+             role="button">Leave a message</a>
+        </p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="panel panel-default"
+           id="divMessage"
+           style="display: none;">
+        <div class="panel-body">
+          <form id="frmMessage">
+            <div class="form-group">
+              <label for="txtName">Your name</label> <input type="text"
+                                                            class="form-control"
+                                                            id="txtName"
+                                                            name="txtName"
+                                                            placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+              <label for="txtMessage">Message</label> <input type="text"
+                                                             class="form-control"
+                                                             id="txtMessage"
+                                                             name="txtMessage"
+                                                             placeholder="Enter your message">
+            </div>
+            <a href="#"
+               role="button"
+               class="btn btn-default"
+               onclick="formSubmit()">Submit</a>
+          </form>
+        </div>
+      </div>
+      <div id="messages">
+      </div>
+    </div>
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <script>
+      var host = window.location.host;
+      var socket = new WebSocket("ws://" + host + ":8000/socket");
+      socket.onopen = function (response) {
+        console.log(response);
+      };
+
+      socket.onmessage = function (response) {
+        var message = response.data;
+        var json = JSON.parse(message);
+
+        if (json.messageType === "numConnections") {
+          $("#numUsers").text(json.connections);
+        } else if (json.messageType === "guestbookEntry") {
+          var msg = json.message;
+          var created = new Date(json.created);
+          var author = json.author;
+
+          $("#messages").prepend('<div class="panel panel-default"><div class="panel-body">' + msg + '</div><div class="panel-footer">By ' + author + ' at ' + created + '</div></div>');
+        }
+      };
+
+      window.onbeforeunload = function () {
+        socket.close();
+      };
+
+      function formSubmit() {
+        var json = {
+          message: $("#txtMessage").val(), author: $("#txtName").val()
+        };
+
+        socket.send(JSON.stringify(json));
+
+        $("#frmMessage").get(0).reset();
+        $('#divMessage').toggle('fast');
+      }
+    </script>
+  </body>
+</html>
