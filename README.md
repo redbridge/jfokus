@@ -1,1 +1,1 @@
-# jfokus
+# JFokus Demo App
