@@ -5,13 +5,13 @@ Running on RedBridge Apps
 
 Create an account at https://cloud.redbridge.se
 
-Create a wildfly8 application
+Create a jboss-wildfly-8 application
 
-    rhc app create wildfly8 jboss-wildfly-8 
+    rhc app create jfokus jboss-wildfly-8 
 
-Add this upstream flask repo
+Add this upstream jfokus repo
 
-    cd wildfly8
+    cd jfokus
     git remote add upstream -m master https://github.com/redbridge/jfokus.git
     git pull -s recursive -X theirs upstream master
     
@@ -21,4 +21,4 @@ Then push the repo upstream
 
 That's it, you can now checkout your application at:
 
-    http://wildfly8-$yournamespace.apps.redbridge.se
+    http://jfokus-$yournamespace.apps.redbridge.se
